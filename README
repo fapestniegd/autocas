@@ -1,0 +1,56 @@
+sub _signature
+sub handler
+sub s3_auth_handler
+sub _xml_get_tags
+sub _reformat_directory
+sub output_filter
+
+
+checksum file; DECLINED
+proxy file; DECLINED
+rename file; OK
+
+
+You can you use either pnotes or subprocess_env (env variables).
+$r->pnotes
+
+
+http://docs.amazonwebservices.com/AWSSDKforPHP/latest/#m=AmazonS3/batch
+
+Directive
+Type
+--------------------------------------
+PerlOpenLogsHandler          RUN_ALL
+PerlPostConfigHandler        RUN_ALL
+PerlChildInitHandler         VOID
+PerlPreConnectionHandler     RUN_ALL
+PerlProcessConnectionHandler RUN_FIRST
+PerlPostReadRequestHandler   RUN_ALL
+PerlTransHandler             RUN_FIRST
+PerlInitHandler              RUN_ALL
+PerlHeaderParserHandler      RUN_ALL
+PerlAccessHandler            RUN_ALL
+PerlAuthenHandler            RUN_FIRST
+PerlAuthzHandler             RUN_FIRST
+PerlTypeHandler              RUN_FIRST
+PerlFixupHandler             RUN_ALL
+PerlResponseHandler          RUN_FIRST
+PerlLogHandler               RUN_ALL
+PerlCleanupHandler           RUN_ALL
+PerlInputFilterHandler       VOID
+PerlOutputFilterHandler      VOID
+
+Handlers of the type VOID will be all executed in the order they have been 
+   registered disregarding their return values. Though in mod_perl they are 
+   expected to return Apache::OK.
+
+Handlers of the type RUN_FIRST will be executed in the order they have been 
+   registered until the first handler that returns something other than 
+   Apache::DECLINED. If the return value is Apache::DECLINED, the next handler 
+   in the chain will be run. If the return value is Apache::OK the next phase 
+   will start. In all other cases the execution will be aborted.
+
+Handlers of the type RUN_ALL will be executed in the order they have been 
+   registered until the first handler that returns something other than 
+   Apache::OK or Apache::DECLINED.
+
