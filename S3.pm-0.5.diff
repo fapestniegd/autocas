@@ -1,0 +1,68 @@
+--- S3.pm.dist  2010-12-22 21:28:08.000000000 +0000
++++ S3.pm       2010-12-23 03:47:18.000000000 +0000
+@@ -18,6 +18,7 @@
+ use Time::Local;
+ use POSIX;
+ use CGI;
++use Data::Dumper;
+ 
+ our $VERSION = '0.05';
+ 
+@@ -34,18 +35,22 @@
+ sub handler
+ {
+     my $r = shift;
++    print STDERR __PACKAGE__."::handler\n";
+ 
+-    return Apache2::Const::DECLINED
+-        if $r->proxyreq;
+ 
+-    return Apache2::Const::DECLINED
+-        unless $r->method eq 'GET' or $r->dir_config('S3ReadWrite');
++    return Apache2::Const::DECLINED if $r->proxyreq;
++
++
++    return Apache2::Const::DECLINED unless $r->method eq 'GET' or $r->dir_config('S3ReadWrite');
+ 
+     my $h = $r->headers_in;
+     my $uri = $r->uri;
+ 
++    return Apache2::Const::DECLINED unless $r->dir_config('S3Map');
++
+     my %map = split /\s*(?:,|=>)\s*/, $r->dir_config("S3Map");
+ 
++
+     # most specific (longest) match first
+     foreach my $base (sort { length $b <=> length $a } keys %map)
+     {
+@@ -85,9 +90,9 @@
+             foreach keys %note;
+ 
+         $r->proxyreq(Apache2::Const::PROXYREQ_REVERSE);
+-        $r->uri("http://s3.amazonaws.com$path");
++        $r->uri("https://s3.amazonaws.com$path");
+         $r->args(($sub ? "$sub&" : "").$args->query_string);
+-        $r->filename("proxy:http://s3.amazonaws.com$path");
++        $r->filename("proxy:https://s3.amazonaws.com$path");
+         $r->handler('proxy-server');
+ 
+         # we delay adding the authorization header to give
+@@ -95,6 +100,7 @@
+         # which would use the same header
+         $r->set_handlers('PerlFixupHandler' => \&s3_auth_handler);
+ 
++
+         # we set up an output filter to translate XML responses
+         # for directory requests into "pretty" HTML
+         $r->add_output_filter(\&output_filter);
+@@ -105,6 +111,10 @@
+     return Apache2::Const::DECLINED;
+ }
+ 
++################################################################################
++#  Rewrite or add the Authorization Header ( from Basic or null to AWS )
++#  Add a Date Header to the request as well...
++################################################################################
+ sub s3_auth_handler
+ {
+     my $r = shift;
